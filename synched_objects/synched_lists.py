@@ -8,6 +8,9 @@ INDENT = 4
 SEP = '\n'
 
 class SynchedList(ABC):
+    """
+    Abstract class of synched lists defining the workflow
+    """
     
     def __init__(self, frequency : int = 5) -> None:
         super().__init__()
@@ -54,7 +57,9 @@ class SynchedList(ABC):
     
 class JsonSynchedList(SynchedList):
     """
-    This a list wrapper that auto saves list content to a json in disk
+    This a list wrapper that auto saves list content to a json in disk.
+    This class does not support appending to jsons.
+    Use DriverSynchedList with JsonDriver to benefit from the appending functionality
     
     filename: path to json where to save data
     frequency: frequency of the disk flush
@@ -92,13 +97,13 @@ class JsonSynchedList(SynchedList):
             
 
 class DriverSynchedList(SynchedList):
+    """ This a list wrapper that auto saves list content using a driver
+    
+    driver: driver to use to save data
+    frequency: frequency of the disk flush
+    """
+    
     def __init__(self, driver: Driver, frequency: int = 100) -> None:
-        
-        """ This a list wrapper that auto saves list content using a driver ()
-        
-        driver: driver to use to save data
-        frequency: frequency of the disk flush
-        """
         super().__init__(frequency=frequency)
         
         assert issubclass(type(driver), Driver)

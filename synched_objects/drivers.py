@@ -11,13 +11,18 @@ SEP = '\n'
 
 
 class Driver(ABC):
+    """ Abstract class for Drivers """
     
     @abstractmethod
     def write(self, data: List[dict]):
+        """ Method to write depending on the specific implementation """
         pass
 
 class JsonDriver(Driver):
+    """ Json driver that supports appending to existing jsons """
+    
     def __init__(self, filename: str, overwrite: bool = False, append: bool = False) -> None:
+        super().__init__()
         
         assert_type(filename, 'filename', (str, Path))
         assert_type(overwrite, 'overwrite', bool)
@@ -30,7 +35,7 @@ class JsonDriver(Driver):
         self.__post_init__()
             
     def __post_init__(self):
-        """don't include start only when appending non empty file"""
+        """ Create or open file then trunctate or append """
         
         # File exists and we are not overwriting nor appending
         if Path(self.filename).is_file() and not (self.overwrite or self.append):
@@ -82,5 +87,5 @@ class JsonDriver(Driver):
         self.isempty = False
     
     def __del__(self):
-        # self.file.flush()
+        self.file.flush()
         self.file.close()
