@@ -1,8 +1,8 @@
-import abc
-from pathlib import Path
 import json
-from typing import List
 import os
+from abc import ABC, abstractmethod
+from pathlib import Path
+from typing import List
 
 from utils import assert_type
 
@@ -10,9 +10,9 @@ INDENT = 4
 SEP = '\n'
 
 
-class Driver(abc.ABC):
+class Driver(ABC):
     
-    @abc.abstractmethod
+    @abstractmethod
     def write(self, data: List[dict]):
         pass
 

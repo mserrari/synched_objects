@@ -1,7 +1,8 @@
+import json
 from abc import ABC, abstractmethod
 from pathlib import Path
-import json
 from typing import Any, Iterable
+
 from drivers import Driver, JsonDriver
 
 INDENT = 4
