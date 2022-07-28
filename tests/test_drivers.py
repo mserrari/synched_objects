@@ -1,4 +1,5 @@
 import json
+import os
 
 from . import TESTING_FOLDER
 from synched_objects.drivers import JsonDriver
@@ -37,17 +38,23 @@ def test_json_driver():
     assert len(data) == len(loaded_data)
     assert data == loaded_data
 
-# def test_rb_ab():
-#     file = open('tt.json', mode='wb+')
-#     file.write('ABCDEFGHIJKLMONQRSTUVWXYZ'.encode())
-#     file.close()
+def test_rb_ab():
     
+    file = TESTING_FOLDER / 'test_ab_rb.json'
+
+    string = 'ABCDEFGHIJKLMONQRSTUVWXYZ'
     
-#     file = open('tt.json', mode='rb+')
-#     file.seek(-20, os.SEEK_END)
+    with open(file, mode='wb+') as fp:
+        modified_string = string[:-2] + 'XX'
+        fp.write(modified_string.encode())
     
-#     file.truncate()
+    with open(file, mode='rb+') as fp:
+        fp.seek(-2, os.SEEK_END)
+        fp.truncate()
+        fp.write('YZ'.encode())
     
-    
-#     file.write('123456789'.encode())
-#     file.close()
+    with open(file, mode='rb') as fp:
+        line = fp.read()
+        
+        assert len(line) == len(string)
+        assert line.decode() == string
