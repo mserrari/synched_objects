@@ -1,14 +1,11 @@
 import json
-from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Iterable
-
-from drivers import Driver, JsonDriver
+from abc import ABC, abstractmethod
+from .drivers import Driver
 
 INDENT = 4
 SEP = '\n'
-TESTING_FOLDER = 'tmp'
-
 
 class SynchedList(ABC):
     
@@ -121,79 +118,3 @@ class DriverSynchedList(SynchedList):
             self.flush()
             del self.driver      
 
-
-def data_generator(total=10):
-    data = [{'index': i, 'data': i**2} for i in range(total)]
-    i = 0
-    while i < len(data):
-        
-        if i % 2 == 0 or i == len(data) - 1:
-            yield data[i], 'append'
-            i += 1
-        else:
-            yield data[i:i+3], 'extend'
-            i += 3
-            
-def fill_with_data(l: SynchedList, total=20):
-    data_gen = data_generator(total=total)
-    output = list()
-    
-    for d, mode in data_gen:
-        if mode == 'append':
-            l.append(d)
-            output.append(d)
-        else:
-            l.extend(d)
-            output.extend(d)
-            
-    return output
-    
-def test_jsonsynchedlist():
-    
-    file = Path(TESTING_FOLDER) / 'json_synched_list.json'
-    l = JsonSynchedList(file,
-                        frequency=5,
-                        overwrite=True)
-    
-    data = fill_with_data(l)
-    del l # flush
-    
-    with open(file, 'rb') as f:
-        loaded_data = json.load(f)
-
-    print(data == loaded_data)
-
-    
-
-        
-def test_driversynchedlist_jsondriver(total=20, frequency=5):
-    
-    """
-    Testing append and extend of synched list using the json driver
-    """
-    
-    file = Path(TESTING_FOLDER) / 'driver_synched_list.json'
-    driver = JsonDriver(file, overwrite=True, append=True)
-    l = DriverSynchedList(driver, frequency=frequency)
-
-    data = fill_with_data(l)
-    del l
-    
-    with open(file, 'rb') as f:
-        loaded_data = json.load(f)
-
-    print(data == loaded_data)
-    
-
-
-if __name__ == '__main__':
-    
-    Path(f'{TESTING_FOLDER}').mkdir(exist_ok=True)
-    
-    test_jsonsynchedlist()
-    test_driversynchedlist_jsondriver()
-    test_driversynchedlist_jsondriver(total=20, frequency=5)
-    test_driversynchedlist_jsondriver(total=20, frequency=5)
-    test_driversynchedlist_jsondriver(total=21, frequency=5)
-    test_driversynchedlist_jsondriver(total=21, frequency=30)
-    test_driversynchedlist_jsondriver(total=230, frequency=11)

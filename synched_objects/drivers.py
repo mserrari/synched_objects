@@ -1,10 +1,10 @@
 import json
 import os
-from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import List
+from abc import ABC, abstractmethod
 
-from utils import assert_type
+from .utils import assert_type
 
 INDENT = 4
 SEP = '\n'
@@ -84,59 +84,3 @@ class JsonDriver(Driver):
     def __del__(self):
         # self.file.flush()
         self.file.close()
-
-
-def test_json_driver():
-
-    filename = 'tmp.json'
-    
-    data = []
-    
-    Path(filename).unlink(missing_ok=True)
-    
-    drv = JsonDriver(filename=filename, overwrite=True, append=False)
-    for j in range(4):
-        t = [{'index': i, 'data': i**2} for i in range(j*5,(j+1)*5)]
-        data.extend(t)
-        drv.write(t)    
-    del drv
-    
-    drv = JsonDriver(filename=filename, overwrite=False, append=True)
-    a = [{'index': i, 'data': i**2} for i in range(-3,0)]
-    data.extend(a)
-    drv.write(a)
-    del drv
-    
-    
-    drv = JsonDriver(filename=filename, overwrite=False, append=True)
-    b = [{'index': i**3, 'data': i/5} for i in range(-50,-40)]
-    data.extend(b)
-    drv.write(b)
-    del drv
-    
-    
-    saved_data = json.load(open(filename, mode='r'))
-    print(saved_data == data)
-    print(saved_data)
-    print(data)      
-    
-
-def test_rb_ab():
-    file = open('tt.json', mode='wb+')
-    file.write('ABCDEFGHIJKLMONQRSTUVWXYZ'.encode())
-    file.close()
-    
-    
-    file = open('tt.json', mode='rb+')
-    file.seek(-20, os.SEEK_END)
-    
-    file.truncate()
-    
-    
-    file.write('123456789'.encode())
-    file.close()
-    
-
-if __name__ == '__main__':
-    
-    test_json_driver()
