@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='synched_objects',
-      version='0.11',
+      version='0.12',
       description='Auto synching python objects',
       url='https://github.com/MohamedSerrari/synched_objects',
       author='MohamedSerrari',
