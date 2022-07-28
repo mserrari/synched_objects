@@ -2,7 +2,7 @@ import json
 import os
 
 from . import TESTING_FOLDER
-from synched_objects.drivers import JsonDriver
+from synched_objects.drivers import JsonDriver, SQLDriver
 
 def test_json_driver():
 
@@ -58,3 +58,22 @@ def test_rb_ab():
         
         assert len(line) == len(string)
         assert line.decode() == string
+
+
+def test_sql_driver():
+    
+    file = TESTING_FOLDER / 'mysql.db'
+    
+    driver = SQLDriver(file)
+    
+    assert driver.conn is not None
+    
+    TEXT = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    
+    data = [{'intobject': i, 'floatobject': i/2., 'stringobject': TEXT[i//len(TEXT)], 'boolobject': i%2==0} for i in range(5)]
+    driver.write(data)
+    
+    fetched_data = driver.get_data()
+    
+    assert len(fetched_data) == len(data)
+    assert fetched_data == data
