@@ -47,7 +47,7 @@ class JsonDriver(Driver):
         assert self.file is not None, f'Could not create file {self.filename}'
         
         if self.append and not self.overwrite:
-            # Check if file is empty
+            # Check if file is not empty
             
             self.file.seek(0, os.SEEK_END)  # Go to end of file
             if self.file.tell() != 0:
