@@ -1,29 +1,22 @@
-from msilib.schema import File
+import abc
 from pathlib import Path
 import json
-from typing import Any, List, Tuple, Type, Union
+from typing import List
 import os
+
+from utils import assert_type
 
 INDENT = 4
 SEP = '\n'
 
-def assert_type(object: Any, name: str, types: Union[Tuple[Type], Type]):
-    
-    if not isinstance(types, (tuple, list)):
-        types = (types,)
-    elif isinstance(types, list):
-        types = tuple(types)
-    
-    typename = lambda x: x.__name__
-    
-    if not isinstance(object, types):
-        raise TypeError(f"{name} must be of type \
-                        {list(map(typename, types))} \
-                        got type {typename(type(object))}")
-    
 
+class Driver(abc.ABC):
+    
+    @abc.abstractmethod
+    def write(self, data: List[dict]):
+        pass
 
-class JsonDriver:
+class JsonDriver(Driver):
     def __init__(self, filename: str, overwrite: bool = False, append: bool = False) -> None:
         
         assert_type(filename, 'filename', (str, Path))
@@ -68,6 +61,7 @@ class JsonDriver:
 
     def write(self, data: List[dict]):
         
+        assert isinstance(data, list)
         if len(data) == 0: return
 
         output = json.dumps(data, indent=INDENT)
@@ -84,64 +78,16 @@ class JsonDriver:
             output = f",{SEP}{' '*INDENT}" + output[START:]
         
         self.file.write(output.encode())
+        self.file.flush()
         self.isempty = False
     
     def __del__(self):
+        # self.file.flush()
         self.file.close()
 
-class StoreListJson():
-    
-    def __init__(self, filename: str, frequency: int = 100, overwrite: bool = True) -> None:
-        
-        """ This a list wrapper that auto saves list content to a json in disk
-        
-        filename: path to json where to save data
-        frequency: frequency of the disk flush
-        overwrite: overwrite existing file
-        
-        """
-        assert isinstance(frequency, int)
-        assert frequency > 0
-        assert isinstance(overwrite, bool)
-        assert isinstance(filename, (str, Path))
-        
-        self.filename = Path(filename)
-        self.frequency = frequency
-        self.overwrite = overwrite
-        
-        if not self.overwrite and self.filename.is_file():
-            raise FileExistsError('Cannot overwrite file')
-        
-        self.data = []
-        self.lastflush = 0
-        self.file = open(self.filename, "wb")
-        
-        
-    def push(self, element):
-        """Add new element to list"""
-        self.lastflush += 1
-        self.data.append(element)
-        
-        if self.lastflush >= self.frequency:
-            self.flush()
-            
-    def flush(self):
-        """Flush data to disk"""
-        self.file.seek(0)
-        # json.dump(self.data, self.file, indent=4)
-        output = json.dumps(self.data, indent=4).encode()
-        self.file.write(output)
-        self.lastflush = 0
-        
-        
-    def __del__(self):
-        """Auto flush to disk when object is removed"""
-        if hasattr(self, 'file'):
-            self.flush()
-            self.file.close()
-            
+
 def test_json_driver():
-    
+
     filename = 'tmp.json'
     
     data = []
@@ -169,19 +115,16 @@ def test_json_driver():
     del drv
     
     
-    # saved_data = json.load(open(filename, mode='r'))
-    # print(saved_data == data)
-    # print(saved_data)
-    # print(data)
+    saved_data = json.load(open(filename, mode='r'))
+    print(saved_data == data)
+    print(saved_data)
+    print(data)      
     
-    
+
 def test_rb_ab():
     file = open('tt.json', mode='wb+')
     file.write('ABCDEFGHIJKLMONQRSTUVWXYZ'.encode())
     file.close()
-    
-    
-    
     
     
     file = open('tt.json', mode='rb+')
@@ -193,13 +136,7 @@ def test_rb_ab():
     file.write('123456789'.encode())
     file.close()
     
-def test_storelist_json():
-    l = StoreListJson('store.json', frequency=5, overwrite=True)
-    
-    for i in range(99):
-        l.push({'index': i, 'data': i**2})
-       
+
 if __name__ == '__main__':
     
     test_json_driver()
-    # test_rb_ab()
